@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<title>Admin UBK</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; }
+.container { max-width:1000px; margin:auto; padding:20px; }
+.card { background:#fff; padding:20px; border-radius:8px; margin-bottom:20px; }
+input, textarea, select, button {
+  width:100%; padding:10px; margin:6px 0;
+}
+button { background:#003366; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#002244; }
+img { max-width:150px; display:block; margin-top:8px; }
+.list-item { border-bottom:1px solid #eee; padding:10px 0; }
+.actions button { width:auto; margin-right:6px; }
+.hidden { display:none; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <h2>Login Admin</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <p id="loginMsg"></p>
+</div>
+
+<!-- ADMIN -->
+<div class="card hidden" id="adminCard">
+  <h2>Tambah / Edit Info UBK</h2>
+
+  <input type="hidden" id="editId">
+
+  <select id="kategori">
+    <option>Utama</option>
+    <option>Sejarah</option>
+    <option>Objektif</option>
+    <option>Fungsi</option>
+    <option>Staf</option>
+  </select>
+
+  <input type="text" id="tajuk" placeholder="Tajuk">
+  <textarea id="kandungan" placeholder="Kandungan"></textarea>
+  <input type="file" id="image">
+
+  <button onclick="simpan()">Simpan</button>
+</div>
+
+<!-- LIST -->
+<div class="card hidden" id="listCard">
+  <h2>Senarai Info</h2>
+  <div id="list"></div>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ================= LOGIN ================= */
+async function login() {
+  const email = email.value;
+  const password = password.value;
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    loginMsg.textContent = "Login gagal";
+    return;
+  }
+
+  loginCard.classList.add("hidden");
+  adminCard.classList.remove("hidden");
+  listCard.classList.remove("hidden");
+  loadList();
+}
+
+/* ================= UPLOAD IMAGE ================= */
+async function uploadImage(file) {
+  const filename = Date.now() + "_" + file.name;
+
+  const { data, error } = await db.storage
+    .from("ubk-images")
+    .upload(filename, file);
+
+  if (error) return null;
+
+  return `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
+}
+
+/* ================= SIMPAN DATA ================= */
+async function simpan() {
+  let imageUrl = null;
+  const file = image.files[0];
+
+  if (file) {
+    imageUrl = await uploadImage(file);
+  }
+
+  const payload = {
+    kategori: kategori.value,
+    tajuk: tajuk.value,
+    kandungan: kandungan.value,
+    image_url: imageUrl
+  };
+
+  if (editId.value) {
+    await db.from("info_ubk").update(payload).eq("id", editId.value);
+  } else {
+    await db.from("info_ubk").insert(payload);
+  }
+
+  resetForm();
+  loadList();
+}
+
+/* ================= LOAD LIST ================= */
+async function loadList() {
+  const { data } = await db.from("info_ubk").select("*").order("created_at", { ascending:false });
+  list.innerHTML = "";
+
+  data.forEach(d => {
+    const div = document.createElement("div");
+    div.className = "list-item";
+    div.innerHTML = `
+      <b>${d.tajuk}</b> (${d.kategori})
+      <div class="actions">
+        <button onclick='edit(${JSON.stringify(d)})'>Edit</button>
+        <button onclick='hapus(${d.id})'>Delete</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+/* ================= EDIT ================= */
+function edit(d) {
+  editId.value = d.id;
+  kategori.value = d.kategori;
+  tajuk.value = d.tajuk;
+  kandungan.value = d.kandungan;
+}
+
+/* ================= DELETE ================= */
+async function hapus(id) {
+  if (!confirm("Padam info ini?")) return;
+  await db.from("info_ubk").delete().eq("id", id);
+  loadList();
+}
+
+function resetForm() {
+  editId.value = "";
+  tajuk.value = "";
+  kandungan.value = "";
+  image.value = "";
+}
+</script>
+</body>
+</html>
