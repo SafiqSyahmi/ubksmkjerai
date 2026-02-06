@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<title>Unit Bimbingan & Kaunseling (UBK)</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+}
+
+/* NAVBAR */
+header {
+  background: #003366;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+nav button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 14px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background: #002244;
+}
+
+/* CONTENT */
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+section {
+  background: white;
+  margin-bottom: 20px;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+section h2 {
+  margin-top: 0;
+  color: #003366;
+}
+
+section img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <nav>
+    <button onclick="loadKategori('Utama')">Utama</button>
+    <button onclick="loadKategori('Sejarah')">Sejarah</button>
+    <button onclick="loadKategori('Objektif')">Objektif</button>
+    <button onclick="loadKategori('Fungsi')">Fungsi</button>
+    <button onclick="loadKategori('Staf')">Staf</button>
+  </nav>
+</header>
+
+<main id="content">
+  <h1>Unit Bimbingan & Kaunseling</h1>
+  <p>Maklumat rasmi Unit Bimbingan dan Kaunseling sekolah.</p>
+</main>
+
+<script>
+// =====================
+// SUPABASE CONFIG
+// =====================
+const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_buMIWFlHZLGi3KbWKwPjDg_6WoPrQ9Y";
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// =====================
+// LOAD DATA BY CATEGORY
+// =====================
+async function loadKategori(kategori) {
+  const content = document.getElementById("content");
+  content.innerHTML = `<h1>${kategori}</h1>`;
+
+  const { data, error } = await supabase
+    .from("info_ubk")
+    .select("*")
+    .eq("kategori", kategori)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    content.innerHTML += `<p class="empty">Ralat memuat data.</p>`;
+    return;
+  }
+
+  if (data.length === 0) {
+    content.innerHTML += `<p class="empty">Tiada maklumat.</p>`;
+    return;
+  }
+
+  data.forEach(item => {
+    const section = document.createElement("section");
+
+    section.innerHTML = `
+      <h2>${item.tajuk}</h2>
+      <p>${item.kandungan}</p>
+      ${item.image_url ? `<img src="${item.image_url}">` : ""}
+    `;
+
+    content.appendChild(section);
+  });
+}
+</script>
+
+</body>
+</html>
