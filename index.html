@@ -95,40 +95,40 @@ section img {
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ⛔ JANGAN guna nama 'supabase'
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// =====================
-// LOAD DATA BY CATEGORY
-// =====================
+/* =====================
+   LOAD DATA BY CATEGORY
+===================== */
 async function loadKategori(kategori) {
   const content = document.getElementById("content");
   content.innerHTML = `<h1>${kategori}</h1>`;
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("info_ubk")
     .select("*")
     .eq("kategori", kategori)
     .order("created_at", { ascending: false });
 
   if (error) {
-    content.innerHTML += `<p class="empty">Ralat memuat data.</p>`;
+    content.innerHTML += `<p style="color:red;">Ralat memuat data</p>`;
+    console.error(error);
     return;
   }
 
-  if (data.length === 0) {
-    content.innerHTML += `<p class="empty">Tiada maklumat.</p>`;
+  if (!data || data.length === 0) {
+    content.innerHTML += `<p style="color:#777;">Tiada maklumat</p>`;
     return;
   }
 
   data.forEach(item => {
     const section = document.createElement("section");
-
     section.innerHTML = `
       <h2>${item.tajuk}</h2>
       <p>${item.kandungan}</p>
-      ${item.image_url ? `<img src="${item.image_url}">` : ""}
+      ${item.image_url ? `<img src="${item.image_url}" style="width:100%;margin-top:10px;border-radius:6px;">` : ""}
     `;
-
     content.appendChild(section);
   });
 }
