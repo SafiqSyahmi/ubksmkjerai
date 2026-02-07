@@ -8,7 +8,7 @@
 
 <style>
 :root {
-  --primary: #006633;
+  --primary: #006633; /* hijau admin */
   --secondary: #f4f7f8;
   --text: #222;
   --card-bg: #fff;
@@ -28,17 +28,16 @@ nav button:hover { background: rgba(255,255,255,0.15); }
   background: linear-gradient(rgba(0,102,51,0.85), rgba(0,102,51,0.85)),
               url('https://images.unsplash.com/photo-1581092795363-7f3f4f1773f5?auto=format&fit=crop&w=1600&q=80');
   background-size: cover; background-position: center;
-  color:white; padding:60px 20px; text-align:center; position: relative;
+  color:white; padding:60px 20px; text-align:center;
 }
 .hero h1 { margin:0; font-size:36px; }
 .hero p { max-width:700px; margin:12px auto 0; opacity:0.95; font-size:18px; line-height:1.5; }
 
-/* MAIN CONTENT */
-main { max-width:1100px; margin:20px auto 40px; padding:0 20px; }
+/* CONTENT */
+main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 
 /* ADD BUTTON */
-#addBtnContainer { text-align:center; margin-bottom:20px; }
-#addBtn { padding:12px 20px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; font-size:16px; }
+#addBtn { margin:20px 0; padding:10px 16px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; display:block; }
 #addBtn:hover { background:#004d29; }
 
 /* CARD */
@@ -105,13 +104,10 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 </section>
 
 <main id="content">
-  <div id="addBtnContainer">
-    <button id="addBtn" onclick="openModal()">Tambah Info</button>
-  </div>
   <p class="empty">Memuatkan maklumat...</p>
 </main>
 
-<!-- MODAL TAMBAH / EDIT -->
+<!-- TAMBAH / EDIT MODAL -->
 <div id="modalAdmin">
   <div class="modal-content">
     <h3 id="modalTitle">Tambah / Edit Info</h3>
@@ -129,29 +125,32 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentKategori = "Utama";
 let editId = null;
 
-/* EVENT LISTENERS NAV */
-document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    currentKategori = btn.dataset.kategori;
-    loadKategori(currentKategori);
-  });
-});
-
-/* LOAD DATA */
+/* =====================
+   LOAD KATEGORI
+===================== */
 async function loadKategori(kategori){
+  currentKategori = kategori;
   const content = document.getElementById("content");
-  content.querySelectorAll(".card").forEach(c=>c.remove()); // clear cards
-  content.querySelector(".empty")?.remove();
+  content.innerHTML = "<p class='empty'>Memuatkan maklumat...</p>";
 
-  const { data } = await supabaseClient.from("info_ubk")
+  const { data, error } = await supabase.from("info_ubk")
     .select("*").eq("kategori", kategori).order("created_at",{ascending:false});
 
-  if(!data || data.length===0){
+  content.innerHTML = "";
+
+  // ADD BUTTON
+  const addBtn = document.createElement("button");
+  addBtn.id="addBtn";
+  addBtn.textContent="Tambah Info";
+  addBtn.onclick = ()=>openModal();
+  content.appendChild(addBtn);
+
+  if(error || !data || data.length===0){
     content.innerHTML += "<p class='empty'>Tiada maklumat</p>";
     return;
   }
@@ -165,14 +164,16 @@ async function loadKategori(kategori){
         <button onclick='deleteItem(${item.id})'>Padam</button>
       </div>
       <h2>${item.tajuk}</h2>
-      ${item.image_url? `<img src="${item.image_url}">`:""}
+      ${item.image_url? `<img src="${item.image_url}">`: ""}
       <p>${item.kandungan}</p>
     `;
     content.appendChild(card);
   });
 }
 
-/* MODAL */
+/* =====================
+   MODAL FUNCTIONS
+===================== */
 function openModal(item=null){
   document.getElementById("modalAdmin").style.display="flex";
   if(item){
@@ -180,7 +181,7 @@ function openModal(item=null){
     document.getElementById("modalTajuk").value = item.tajuk;
     document.getElementById("modalKandungan").value = item.kandungan;
   }else{
-    editId=null;
+    editId = null;
     document.getElementById("modalTajuk").value="";
     document.getElementById("modalKandungan").value="";
     document.getElementById("modalImage").value="";
@@ -194,43 +195,59 @@ function closeModal(){
   document.getElementById("modalImage").value="";
 }
 
-/* SAVE DATA */
+/* =====================
+   SAVE DATA
+===================== */
 document.getElementById("saveBtn").onclick = async function(){
-  const tajuk = document.getElementById("modalTajuk").value;
-  const kandungan = document.getElementById("modalKandungan").value;
+  const tajuk = document.getElementById("modalTajuk").value.trim();
+  const kandungan = document.getElementById("modalKandungan").value.trim();
   const file = document.getElementById("modalImage").files[0];
-  let image_url = null;
 
+  if(!tajuk || !kandungan){
+    alert("Sila isi semua maklumat");
+    return;
+  }
+
+  let image_url = null;
   if(file){
-    const filename = Date.now()+"_"+file.name;
-    const { error } = await supabaseClient.storage.from("ubk-images").upload(filename, file);
+    const filename = Date.now() + "_" + file.name;
+    const { error } = await supabase.storage.from("ubk-images").upload(filename, file);
     if(error){ alert("Gagal upload gambar"); return; }
     image_url = `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
   }
 
-  const data = { tajuk, kandungan };
+  const data = { kategori: currentKategori, tajuk, kandungan };
   if(image_url) data.image_url = image_url;
 
   if(editId){
-    await supabaseClient.from("info_ubk").update(data).eq("id", editId);
+    await supabase.from("info_ubk").update(data).eq("id", editId);
   }else{
-    await supabaseClient.from("info_ubk").insert(data);
+    await supabase.from("info_ubk").insert(data);
   }
 
   closeModal();
   loadKategori(currentKategori);
 };
 
-/* EDIT / DELETE */
+/* =====================
+   EDIT / DELETE
+===================== */
 function editItem(item){ openModal(item); }
 
 async function deleteItem(id){
   if(!confirm("Padam info ini?")) return;
-  await supabaseClient.from("info_ubk").delete().eq("id", id);
+  await supabase.from("info_ubk").delete().eq("id", id);
   loadKategori(currentKategori);
 }
 
-/* Muat awal kategori Utama */
+/* =====================
+   NAV BUTTONS
+===================== */
+document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
+  btn.addEventListener("click", ()=>loadKategori(btn.dataset.kategori));
+});
+
+// load default
 loadKategori(currentKategori);
 </script>
 
