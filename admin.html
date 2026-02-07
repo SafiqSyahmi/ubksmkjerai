@@ -8,11 +8,12 @@
 
 <style>
 :root {
-  --primary: #006633; /* warna admin hijau */
+  --primary: #006633; /* hijau admin */
   --secondary: #f4f7f8;
   --text: #222;
   --card-bg: #fff;
 }
+
 * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
 body { margin:0; background: var(--secondary); color: var(--text); }
 
@@ -21,8 +22,6 @@ header { background: var(--primary); position: sticky; top:0; z-index:100; }
 nav { max-width:1100px; margin:auto; display:flex; gap:6px; padding:10px; flex-wrap:wrap; }
 nav button { background:transparent; border:none; color:#fff; padding:10px 16px; font-size:15px; cursor:pointer; border-radius:6px; transition: background 0.2s; }
 nav button:hover { background: rgba(255,255,255,0.15); }
-nav .admin-btn { background:#003300; }
-nav .admin-btn:hover { background:#001a00; }
 
 /* HERO */
 .hero {
@@ -51,17 +50,17 @@ main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 .card p { line-height:1.7; font-size:16px; }
 .card img { width:100%; max-height:320px; object-fit:contain; border-radius:10px; margin:16px 0; background:#f5f5f5; }
 
-/* ADMIN BUTTONS */
+/* ADMIN CONTROLS */
 .admin-controls { position:absolute; top:10px; right:10px; }
-.admin-controls button { margin-left:6px; padding:4px 10px; font-size:13px; background:#003300; color:white; border:none; border-radius:6px; cursor:pointer; }
-.admin-controls button:hover { background:#001a00; }
+.admin-controls button { margin-left:6px; padding:4px 10px; font-size:13px; background:#004d29; color:white; border:none; border-radius:6px; cursor:pointer; }
+.admin-controls button:hover { background:#003318; }
 
 /* ADD BUTTON */
 #addBtn { margin-bottom:20px; padding:10px 16px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; }
 #addBtn:hover { background:#004d29; }
 
 /* MODAL */
-#adminModal, #loginModal {
+#modalAdmin {
   display:none; position:fixed; top:0; left:0; width:100%; height:100%;
   background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
 }
@@ -96,13 +95,12 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
     <button data-kategori="Objektif">Objektif</button>
     <button data-kategori="Fungsi">Fungsi</button>
     <button data-kategori="Staf">Staf</button>
-    <button class="admin-btn">Admin</button>
   </nav>
 </header>
 
 <section class="hero">
-  <h1>Unit Bimbingan & Kaunseling</h1>
-  <p>Memberi bimbingan, sokongan psikososial dan pembangunan sahsiah murid secara holistik di SMK Jerai.</p>
+  <h1>Admin UBK - SMK Jerai</h1>
+  <p>Boleh Tambah, Edit & Padam info secara terus di sini.</p>
 </section>
 
 <main id="content">
@@ -110,7 +108,7 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 </main>
 
 <!-- MODAL TAMBAH/EDIT -->
-<div id="adminModal">
+<div id="modalAdmin">
   <div class="modal-content">
     <h3 id="modalTitle">Tambah / Edit Info</h3>
     <input type="text" id="modalTajuk" placeholder="Tajuk">
@@ -121,27 +119,14 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
   </div>
 </div>
 
-<!-- MODAL LOGIN -->
-<div id="loginModal">
-  <div class="modal-content">
-    <h3>Login Admin</h3>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <button id="loginBtn">Login</button>
-  </div>
-</div>
-
 <footer>Unit Bimbingan & Kaunseling · SMK Jerai</footer>
 
 <script>
-/* =====================
-   SUPABASE CONFIG
-===================== */
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let isAdmin = false;
 let currentKategori = "Utama";
 let editId = null;
 
@@ -151,25 +136,6 @@ let editId = null;
 document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
   btn.addEventListener("click", ()=>loadKategori(btn.dataset.kategori));
 });
-document.querySelector(".admin-btn").addEventListener("click",()=>{ document.getElementById("loginModal").style.display="flex"; });
-document.getElementById("loginBtn").addEventListener("click", loginAdmin);
-document.getElementById("saveBtn").addEventListener("click", saveAdmin);
-
-/* =====================
-   ADMIN LOGIN
-===================== */
-async function loginAdmin(){
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-  if(error){ alert("Login gagal"); return; }
-
-  isAdmin = true;
-  document.getElementById("loginModal").style.display="none";
-  loadKategori(currentKategori);
-}
 
 /* =====================
    LOAD KATEGORI
@@ -184,13 +150,12 @@ async function loadKategori(kategori){
 
   content.innerHTML = "";
 
-  if(isAdmin){
-    const addBtn = document.createElement("button");
-    addBtn.id = "addBtn";
-    addBtn.textContent = "Tambah Info";
-    addBtn.onclick = ()=>openModal();
-    content.appendChild(addBtn);
-  }
+  // ADD BUTTON
+  const addBtn = document.createElement("button");
+  addBtn.id = "addBtn";
+  addBtn.textContent = "Tambah Info";
+  addBtn.onclick = ()=>openModal();
+  content.appendChild(addBtn);
 
   if(!data || data.length===0){
     content.innerHTML += "<p class='empty'>Tiada maklumat</p>";
@@ -201,10 +166,10 @@ async function loadKategori(kategori){
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      ${isAdmin? `<div class="admin-controls">
+      <div class="admin-controls">
         <button onclick='editItem(${JSON.stringify(item)})'>Edit</button>
         <button onclick='deleteItem(${item.id})'>Padam</button>
-      </div>`: ""}
+      </div>
       <h2>${item.tajuk}</h2>
       ${item.image_url? `<img src="${item.image_url}">`: ""}
       <p>${item.kandungan}</p>
@@ -217,7 +182,7 @@ async function loadKategori(kategori){
    MODAL FUNCTIONS
 ===================== */
 function openModal(item=null){
-  document.getElementById("adminModal").style.display="flex";
+  document.getElementById("modalAdmin").style.display="flex";
   if(item){
     editId = item.id;
     document.getElementById("modalTajuk").value = item.tajuk;
@@ -231,7 +196,7 @@ function openModal(item=null){
 }
 
 function closeModal(){
-  document.getElementById("adminModal").style.display="none";
+  document.getElementById("modalAdmin").style.display="none";
   editId = null;
   document.getElementById("modalTajuk").value="";
   document.getElementById("modalKandungan").value="";
@@ -239,7 +204,7 @@ function closeModal(){
 }
 
 /* =====================
-   SAVE ADMIN DATA
+   SAVE DATA
 ===================== */
 async function saveAdmin(){
   const tajuk = document.getElementById("modalTajuk").value;
@@ -283,6 +248,5 @@ async function deleteItem(id){
 ===================== */
 loadKategori(currentKategori);
 </script>
-
 </body>
 </html>
