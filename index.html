@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <title>Unit Bimbingan & Kaunseling - SMK Jerai</title>
 
-<!-- Supabase CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 :root {
   --primary: #004080;
@@ -194,6 +191,9 @@ footer {
   Unit Bimbingan & Kaunseling · SMK Jerai
 </footer>
 
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 // =====================
 // SUPABASE CONFIG
@@ -203,46 +203,41 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// =====================
-// LOAD DATA BY CATEGORY
-// =====================
-async function loadKategori(kategori) {
-  const content = document.getElementById("content");
-  content.innerHTML = `<p class="empty">Memuatkan maklumat...</p>`;
+  async function loadKategori(kategori) {
+    const content = document.getElementById("content");
+    content.innerHTML = `<p class="empty">Memuatkan maklumat...</p>`;
+    const { data, error } = await supabase
+      .from("info_ubk")
+      .select("*")
+      .eq("kategori", kategori)
+      .order("created_at", { ascending: false });
 
-  const { data, error } = await supabase
-    .from("info_ubk")
-    .select("*")
-    .eq("kategori", kategori)
-    .order("created_at", { ascending: false });
+    if (error) {
+      content.innerHTML = `<p class="empty">Ralat memuat data</p>`;
+      console.error(error);
+      return;
+    }
 
-  if (error) {
-    content.innerHTML = `<p class="empty">Ralat memuat data</p>`;
-    console.error(error);
-    return;
+    if (!data || data.length === 0) {
+      content.innerHTML = `<p class="empty">Tiada maklumat</p>`;
+      return;
+    }
+
+    content.innerHTML = "";
+    data.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <h2>${item.tajuk}</h2>
+        ${item.image_url ? `<img src="${item.image_url}" alt="${item.tajuk}">` : ""}
+        <p>${item.kandungan}</p>
+      `;
+      content.appendChild(card);
+    });
   }
 
-  if (!data || data.length === 0) {
-    content.innerHTML = `<p class="empty">Tiada maklumat</p>`;
-    return;
-  }
-
-  content.innerHTML = "";
-  data.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h2>${item.tajuk}</h2>
-      ${item.image_url ? `<img src="${item.image_url}" alt="${item.tajuk}">` : ""}
-      <p>${item.kandungan}</p>
-    `;
-    content.appendChild(card);
-  });
-}
-
-// Muat awal kategori Utama
-loadKategori("Utama");
-</script>
-
+  // Muat awal
+  loadKategori("Utama");
+  </script>
 </body>
 </html>
