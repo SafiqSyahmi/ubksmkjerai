@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Unit Bimbingan & Kaunseling (UBK)</title>
 
+<!-- Supabase CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -28,13 +29,23 @@ nav button {
   background: none;
   border: none;
   color: white;
-  padding: 14px 20px;
+  padding: 14px 18px;
   font-size: 16px;
   cursor: pointer;
 }
 
 nav button:hover {
   background: #002244;
+}
+
+/* ADMIN BUTTON */
+nav .admin-btn {
+  background: #880000;
+  margin-left: 10px;
+}
+
+nav .admin-btn:hover {
+  background: #660000;
 }
 
 /* CONTENT */
@@ -80,6 +91,11 @@ section img {
     <button onclick="loadKategori('Objektif')">Objektif</button>
     <button onclick="loadKategori('Fungsi')">Fungsi</button>
     <button onclick="loadKategori('Staf')">Staf</button>
+
+    <!-- BUTTON ADMIN -->
+    <button class="admin-btn" onclick="window.location.href='admin.html'">
+      Admin
+    </button>
   </nav>
 </header>
 
@@ -89,13 +105,12 @@ section img {
 </main>
 
 <script>
-// =====================
-// SUPABASE CONFIG
-// =====================
-const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
+/* =====================
+   SUPABASE CONFIG
+===================== */
+const SUPABASE_URL = "https://XXXX.supabase.co";
+const SUPABASE_KEY = "YOUR_ANON_KEY";
 
-// ⛔ JANGAN guna nama 'supabase'
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* =====================
@@ -112,13 +127,13 @@ async function loadKategori(kategori) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    content.innerHTML += `<p style="color:red;">Ralat memuat data</p>`;
+    content.innerHTML += `<p class="empty">Ralat memuat data</p>`;
     console.error(error);
     return;
   }
 
   if (!data || data.length === 0) {
-    content.innerHTML += `<p style="color:#777;">Tiada maklumat</p>`;
+    content.innerHTML += `<p class="empty">Tiada maklumat</p>`;
     return;
   }
 
@@ -127,7 +142,7 @@ async function loadKategori(kategori) {
     section.innerHTML = `
       <h2>${item.tajuk}</h2>
       <p>${item.kandungan}</p>
-      ${item.image_url ? `<img src="${item.image_url}" style="width:100%;margin-top:10px;border-radius:6px;">` : ""}
+      ${item.image_url ? `<img src="${item.image_url}">` : ""}
     `;
     content.appendChild(section);
   });
