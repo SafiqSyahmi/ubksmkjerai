@@ -7,88 +7,182 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+/* ===== GLOBAL ===== */
 body {
-  font-family: Arial, sans-serif;
-  background:#f4f6f8;
-  margin:0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 0;
+  color: #222;
 }
 .container {
-  max-width:1000px;
-  margin:auto;
-  padding:20px;
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
 }
+
+/* ===== CARD ===== */
 .card {
-  background:#fff;
-  padding:20px;
-  border-radius:8px;
-  margin-bottom:20px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
-input, textarea, select, button {
-  width:100%;
-  padding:10px;
-  margin:6px 0;
+
+/* ===== HEADINGS ===== */
+h2 {
+  margin-top: 0;
+  color: #004080;
 }
+
+/* ===== INPUTS ===== */
+input[type="text"], input[type="email"], input[type="password"], textarea, select, input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ===== BUTTONS ===== */
 button {
-  background:#003366;
-  color:#fff;
-  border:none;
-  cursor:pointer;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #004080;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s;
+  margin-top: 6px;
 }
+
 button:hover {
-  background:#002244;
+  background: #002244;
 }
-.list-item {
-  border-bottom:1px solid #eee;
-  padding:10px 0;
+
+/* ===== LOGIN MESSAGE ===== */
+#loginMsg {
+  color: red;
+  margin-top: 8px;
 }
+
+/* ===== LIST ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+table th {
+  background: #e6eef8;
+  color: #004080;
+}
+
 .actions button {
-  width:auto;
-  margin-right:6px;
+  margin-right: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
+
+.actions button:hover {
+  opacity: 0.8;
+}
+
+/* ===== HIDDEN ===== */
 .hidden {
-  display:none;
+  display: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  table, thead, tbody, th, td, tr { 
+    display: block; 
+  }
+  th {
+    display: none;
+  }
+  td {
+    position: relative;
+    padding-left: 50%;
+    margin-bottom: 12px;
+  }
+  td:before {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 45%;
+    white-space: nowrap;
+    font-weight: bold;
+    color: #004080;
+  }
+  td:nth-of-type(1):before { content: "Tajuk"; }
+  td:nth-of-type(2):before { content: "Kategori"; }
+  td:nth-of-type(3):before { content: "Actions"; }
 }
 </style>
 </head>
-
 <body>
 <div class="container">
 
-<!-- LOGIN -->
-<div class="card" id="loginCard">
-  <h2>Login Admin</h2>
-  <input type="email" id="emailInput" placeholder="Email">
-  <input type="password" id="passwordInput" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <p id="loginMsg"></p>
-</div>
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <h2>Login Admin</h2>
+    <input type="email" id="emailInput" placeholder="Email">
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="loginMsg"></p>
+  </div>
 
-<!-- ADMIN FORM -->
-<div class="card hidden" id="adminCard">
-  <h2>Tambah / Edit Info UBK</h2>
+  <!-- ADMIN FORM -->
+  <div class="card hidden" id="adminCard">
+    <h2>Tambah / Edit Info UBK</h2>
 
-  <input type="hidden" id="editId">
+    <input type="hidden" id="editId">
 
-  <select id="kategoriInput">
-    <option>Utama</option>
-    <option>Sejarah</option>
-    <option>Objektif</option>
-    <option>Fungsi</option>
-    <option>Staf</option>
-  </select>
+    <select id="kategoriInput">
+      <option>Utama</option>
+      <option>Sejarah</option>
+      <option>Objektif</option>
+      <option>Fungsi</option>
+      <option>Staf</option>
+    </select>
 
-  <input type="text" id="tajukInput" placeholder="Tajuk">
-  <textarea id="kandunganInput" placeholder="Kandungan"></textarea>
-  <input type="file" id="imageInput">
+    <input type="text" id="tajukInput" placeholder="Tajuk">
+    <textarea id="kandunganInput" placeholder="Kandungan"></textarea>
+    <input type="file" id="imageInput">
 
-  <button onclick="simpan()">Simpan</button>
-</div>
+    <button onclick="simpan()">Simpan</button>
+  </div>
 
-<!-- LIST -->
-<div class="card hidden" id="listCard">
-  <h2>Senarai Info</h2>
-  <div id="list"></div>
-</div>
+  <!-- LIST -->
+  <div class="card hidden" id="listCard">
+    <h2>Senarai Info</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tajuk</th>
+          <th>Kategori</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="list"></tbody>
+    </table>
+  </div>
 
 </div>
 
@@ -108,10 +202,7 @@ async function login() {
   const email = document.getElementById("emailInput").value;
   const password = document.getElementById("passwordInput").value;
 
-  const { error } = await db.auth.signInWithPassword({
-    email,
-    password
-  });
+  const { error } = await db.auth.signInWithPassword({ email, password });
 
   if (error) {
     document.getElementById("loginMsg").textContent = "Login gagal";
@@ -130,16 +221,13 @@ async function login() {
 ===================== */
 async function uploadImage(file) {
   const filename = Date.now() + "_" + file.name;
-
   const { error } = await db.storage
     .from("ubk-images")
     .upload(filename, file);
-
   if (error) {
     alert("Gagal upload gambar");
     return null;
   }
-
   return `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
 }
 
@@ -182,16 +270,16 @@ async function loadList() {
   list.innerHTML = "";
 
   data.forEach(d => {
-    const div = document.createElement("div");
-    div.className = "list-item";
-    div.innerHTML = `
-      <b>${d.tajuk}</b> (${d.kategori})
-      <div class="actions">
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${d.tajuk}</td>
+      <td>${d.kategori}</td>
+      <td class="actions">
         <button onclick='editItem(${JSON.stringify(d)})'>Edit</button>
         <button onclick='hapus(${d.id})'>Delete</button>
-      </div>
+      </td>
     `;
-    list.appendChild(div);
+    list.appendChild(tr);
   });
 }
 
