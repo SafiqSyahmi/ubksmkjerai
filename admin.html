@@ -7,36 +7,48 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* ===== GLOBAL ===== */
+:root {
+  --primary: #004080;
+  --secondary: #f4f7fb;
+  --text: #222;
+  --card-bg: #fff;
+}
+
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #f4f6f8;
+  background: var(--secondary);
   margin: 0;
-  padding: 0;
-  color: #222;
+  color: var(--text);
 }
+
 .container {
   max-width: 1000px;
   margin: auto;
   padding: 20px;
 }
 
-/* ===== CARD ===== */
+/* CARD STYLING */
 .card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 12px;
-  padding: 25px;
+  padding: 20px;
   margin-bottom: 20px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* ===== HEADINGS ===== */
-h2 {
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+/* HEADINGS */
+h2, h3 {
   margin-top: 0;
-  color: #004080;
+  color: var(--primary);
 }
 
-/* ===== INPUTS ===== */
+/* INPUTS */
 input[type="text"], input[type="email"], input[type="password"], textarea, select, input[type="file"] {
   width: 100%;
   padding: 12px;
@@ -52,12 +64,12 @@ textarea {
   min-height: 100px;
 }
 
-/* ===== BUTTONS ===== */
+/* BUTTONS */
 button {
   padding: 12px 20px;
   border: none;
   border-radius: 8px;
-  background: #004080;
+  background: var(--primary);
   color: white;
   cursor: pointer;
   font-size: 15px;
@@ -69,73 +81,42 @@ button:hover {
   background: #002244;
 }
 
-/* ===== LOGIN MESSAGE ===== */
+/* LOGIN MESSAGE */
 #loginMsg {
   color: red;
   margin-top: 8px;
 }
 
-/* ===== LIST ===== */
-table {
+/* CARD PREVIEW */
+#previewCard img {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
+  max-height: 300px;
+  object-fit: contain;
+  margin: 12px 0;
+  border-radius: 10px;
 }
 
-table th, table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
+/* CARD CONTENT */
+.card h2 {
+  font-size: 20px;
+  color: var(--primary);
 }
 
-table th {
-  background: #e6eef8;
-  color: #004080;
+.card p {
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-.actions button {
-  margin-right: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.actions button:hover {
-  opacity: 0.8;
-}
-
-/* ===== HIDDEN ===== */
-.hidden {
-  display: none;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 600px) {
-  table, thead, tbody, th, td, tr { 
-    display: block; 
-  }
-  th {
-    display: none;
-  }
-  td {
-    position: relative;
-    padding-left: 50%;
-    margin-bottom: 12px;
-  }
-  td:before {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 45%;
-    white-space: nowrap;
-    font-weight: bold;
-    color: #004080;
-  }
-  td:nth-of-type(1):before { content: "Tajuk"; }
-  td:nth-of-type(2):before { content: "Kategori"; }
-  td:nth-of-type(3):before { content: "Actions"; }
+/* EMPTY MESSAGE */
+.empty {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  padding: 20px 0;
 }
 </style>
 </head>
+
 <body>
 <div class="container">
 
@@ -148,7 +129,7 @@ table th {
     <p id="loginMsg"></p>
   </div>
 
-  <!-- ADMIN FORM -->
+  <!-- ADMIN FORM + PREVIEW -->
   <div class="card hidden" id="adminCard">
     <h2>Tambah / Edit Info UBK</h2>
 
@@ -167,21 +148,17 @@ table th {
     <input type="file" id="imageInput">
 
     <button onclick="simpan()">Simpan</button>
+
+    <h3>Preview</h3>
+    <div id="previewCard" class="card empty">Maklumat akan dipaparkan di sini</div>
   </div>
 
-  <!-- LIST -->
+  <!-- LIST OF INFO -->
   <div class="card hidden" id="listCard">
     <h2>Senarai Info</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Tajuk</th>
-          <th>Kategori</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="list"></tbody>
-    </table>
+    <div id="list">
+      <p class="empty">Memuatkan maklumat...</p>
+    </div>
   </div>
 
 </div>
@@ -214,6 +191,7 @@ async function login() {
   document.getElementById("listCard").classList.remove("hidden");
 
   loadList();
+  updatePreview();
 }
 
 /* =====================
@@ -221,9 +199,7 @@ async function login() {
 ===================== */
 async function uploadImage(file) {
   const filename = Date.now() + "_" + file.name;
-  const { error } = await db.storage
-    .from("ubk-images")
-    .upload(filename, file);
+  const { error } = await db.storage.from("ubk-images").upload(filename, file);
   if (error) {
     alert("Gagal upload gambar");
     return null;
@@ -261,40 +237,45 @@ async function simpan() {
    LOAD LIST
 ===================== */
 async function loadList() {
-  const { data } = await db
-    .from("info_ubk")
-    .select("*")
-    .order("created_at", { ascending:false });
+  const { data } = await db.from("info_ubk").select("*").order("created_at", { ascending:false });
 
   const list = document.getElementById("list");
   list.innerHTML = "";
 
+  if (!data || data.length === 0) {
+    list.innerHTML = '<p class="empty">Tiada maklumat</p>';
+    return;
+  }
+
   data.forEach(d => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${d.tajuk}</td>
-      <td>${d.kategori}</td>
-      <td class="actions">
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h2>${d.tajuk}</h2>
+      ${d.image_url ? `<img src="${d.image_url}" alt="${d.tajuk}">` : ""}
+      <p>${d.kandungan}</p>
+      <div class="actions">
         <button onclick='editItem(${JSON.stringify(d)})'>Edit</button>
-        <button onclick='hapus(${d.id})'>Delete</button>
-      </td>
+        <button onclick='hapus(${d.id})'>Padam</button>
+      </div>
     `;
-    list.appendChild(tr);
+    list.appendChild(card);
   });
 }
 
 /* =====================
-   EDIT
+   EDIT ITEM
 ===================== */
 function editItem(d) {
   document.getElementById("editId").value = d.id;
   document.getElementById("kategoriInput").value = d.kategori;
   document.getElementById("tajukInput").value = d.tajuk;
   document.getElementById("kandunganInput").value = d.kandungan;
+  updatePreview();
 }
 
 /* =====================
-   DELETE
+   DELETE ITEM
 ===================== */
 async function hapus(id) {
   if (!confirm("Padam info ini?")) return;
@@ -302,13 +283,49 @@ async function hapus(id) {
   loadList();
 }
 
+/* =====================
+   PREVIEW LIVE
+===================== */
+const tajukInput = document.getElementById("tajukInput");
+const kandunganInput = document.getElementById("kandunganInput");
+const imageInput = document.getElementById("imageInput");
+const previewCard = document.getElementById("previewCard");
+
+function updatePreview() {
+  const title = tajukInput.value || "Tajuk";
+  const content = kandunganInput.value || "Kandungan";
+  if (imageInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewCard.innerHTML = `
+        <h2>${title}</h2>
+        <img src="${e.target.result}" alt="Preview">
+        <p>${content}</p>
+      `;
+    }
+    reader.readAsDataURL(imageInput.files[0]);
+  } else {
+    previewCard.innerHTML = `
+      <h2>${title}</h2>
+      <p>${content}</p>
+    `;
+  }
+}
+
+tajukInput.addEventListener("input", updatePreview);
+kandunganInput.addEventListener("input", updatePreview);
+imageInput.addEventListener("change", updatePreview);
+
+/* =====================
+   RESET FORM
+===================== */
 function resetForm() {
   document.getElementById("editId").value = "";
-  document.getElementById("tajukInput").value = "";
-  document.getElementById("kandunganInput").value = "";
-  document.getElementById("imageInput").value = "";
+  tajukInput.value = "";
+  kandunganInput.value = "";
+  imageInput.value = "";
+  previewCard.innerHTML = '<p class="empty">Maklumat akan dipaparkan di sini</p>';
 }
 </script>
-
 </body>
 </html>
