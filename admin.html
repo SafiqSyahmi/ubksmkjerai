@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta charset="UTF-8">
-<title>Admin UBK</title>
+<title>Admin UBK - SMK Jerai</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -14,154 +14,116 @@
   --card-bg: #fff;
 }
 
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: var(--secondary);
-  margin: 0;
-  color: var(--text);
-}
+* { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
 
-.container {
-  max-width: 1000px;
-  margin: auto;
-  padding: 20px;
-}
+body { margin:0; background: var(--secondary); color: var(--text); }
 
-/* CARD STYLING */
+/* ===== HEADER ===== */
+header { background: var(--primary); position: sticky; top:0; z-index:100; }
+nav { max-width:1100px; margin:auto; display:flex; gap:6px; padding:10px; flex-wrap:wrap; }
+nav button { background:transparent; border:none; color:#fff; padding:10px 16px; font-size:15px; cursor:pointer; border-radius:6px; transition: background 0.2s; }
+nav button:hover { background: rgba(255,255,255,0.15); }
+nav .admin-btn { background:#880000; }
+nav .admin-btn:hover { background:#660000; }
+
+/* ===== HERO ===== */
+.hero {
+  background: linear-gradient(rgba(0,64,128,0.85), rgba(0,64,128,0.85)),
+              url('https://images.unsplash.com/photo-1581092795363-7f3f4f1773f5?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover; background-position: center;
+  color:white; padding:60px 20px; text-align:center;
+}
+.hero h1 { margin:0; font-size:36px; }
+.hero p { max-width:700px; margin:12px auto 0; opacity:0.95; font-size:18px; line-height:1.5; }
+
+/* ===== CONTENT ===== */
+main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
+
+/* ===== CARD ===== */
 .card {
   background: var(--card-bg);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border-radius: 14px; padding:20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  margin-bottom:24px;
   transition: transform 0.2s, box-shadow 0.2s;
+  position:relative;
 }
+.card:hover { transform:translateY(-4px); box-shadow:0 12px 35px rgba(0,0,0,0.12); }
+.card h2 { margin-top:0; color: var(--primary); font-size:22px; }
+.card p { line-height:1.7; font-size:16px; }
+.card img { width:100%; max-height:320px; object-fit:contain; border-radius:10px; margin:16px 0; background:#f5f5f5; }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+/* ADMIN BUTTONS ON CARD */
+.admin-controls {
+  position:absolute; top:10px; right:10px;
 }
+.admin-controls button { margin-left:6px; padding:4px 10px; font-size:13px; background:#880000; color:white; border:none; border-radius:6px; cursor:pointer; }
+.admin-controls button:hover { background:#660000; }
 
-/* HEADINGS */
-h2, h3 {
-  margin-top: 0;
-  color: var(--primary);
-}
+/* ADD BUTTON */
+#addBtn { margin-bottom:20px; }
 
-/* INPUTS */
-input[type="text"], input[type="email"], input[type="password"], textarea, select, input[type="file"] {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-  box-sizing: border-box;
+/* MODAL */
+#adminModal {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
 }
-
-textarea {
-  resize: vertical;
-  min-height: 100px;
+#adminModal .modal-content {
+  background:white; padding:20px; border-radius:10px; width:90%; max-width:500px;
 }
-
-/* BUTTONS */
-button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  background: var(--primary);
-  color: white;
-  cursor: pointer;
-  font-size: 15px;
-  transition: background 0.2s;
-  margin-top: 6px;
-}
-
-button:hover {
-  background: #002244;
-}
-
-/* LOGIN MESSAGE */
-#loginMsg {
-  color: red;
-  margin-top: 8px;
-}
-
-/* CARD PREVIEW */
-#previewCard img {
-  width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-  margin: 12px 0;
-  border-radius: 10px;
-}
-
-/* CARD CONTENT */
-.card h2 {
-  font-size: 20px;
-  color: var(--primary);
-}
-
-.card p {
-  font-size: 16px;
-  line-height: 1.6;
-}
+#adminModal input, #adminModal textarea { width:100%; margin:6px 0; padding:10px; border-radius:6px; border:1px solid #ccc; }
+#adminModal button { margin-top:6px; }
 
 /* EMPTY MESSAGE */
-.empty {
-  text-align: center;
-  color: #777;
-  font-style: italic;
-  padding: 20px 0;
+.empty { text-align:center; color:#777; font-style:italic; padding:40px 0; }
+
+/* ===== FOOTER ===== */
+footer { text-align:center; padding:20px; font-size:14px; color:#666; background:#e6eef8; }
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .hero h1{ font-size:28px; }
+  .card h2{ font-size:18px; }
+  nav{ justify-content:center; }
 }
 </style>
 </head>
 
 <body>
-<div class="container">
 
-  <!-- LOGIN -->
-  <div class="card" id="loginCard">
-    <h2>Login Admin</h2>
-    <input type="email" id="emailInput" placeholder="Email">
-    <input type="password" id="passwordInput" placeholder="Password">
-    <button onclick="login()">Login</button>
-    <p id="loginMsg"></p>
+<header>
+  <nav>
+    <button onclick="loadKategori('Utama')">Utama</button>
+    <button onclick="loadKategori('Sejarah')">Sejarah</button>
+    <button onclick="loadKategori('Objektif')">Objektif</button>
+    <button onclick="loadKategori('Fungsi')">Fungsi</button>
+    <button onclick="loadKategori('Staf')">Staf</button>
+    <button class="admin-btn" onclick="loginAdmin()">Admin</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Unit Bimbingan & Kaunseling</h1>
+  <p>Memberi bimbingan, sokongan psikososial dan pembangunan sahsiah murid secara holistik di SMK Jerai.</p>
+</section>
+
+<main id="content">
+  <p class="empty">Memuatkan maklumat...</p>
+</main>
+
+<!-- MODAL TAMBAH/EDIT -->
+<div id="adminModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Tambah / Edit Info</h3>
+    <input type="text" id="modalTajuk" placeholder="Tajuk">
+    <textarea id="modalKandungan" placeholder="Kandungan"></textarea>
+    <input type="file" id="modalImage">
+    <button onclick="saveAdmin()">Simpan</button>
+    <button onclick="closeModal()">Batal</button>
   </div>
-
-  <!-- ADMIN FORM + PREVIEW -->
-  <div class="card hidden" id="adminCard">
-    <h2>Tambah / Edit Info UBK</h2>
-
-    <input type="hidden" id="editId">
-
-    <select id="kategoriInput">
-      <option>Utama</option>
-      <option>Sejarah</option>
-      <option>Objektif</option>
-      <option>Fungsi</option>
-      <option>Staf</option>
-    </select>
-
-    <input type="text" id="tajukInput" placeholder="Tajuk">
-    <textarea id="kandunganInput" placeholder="Kandungan"></textarea>
-    <input type="file" id="imageInput">
-
-    <button onclick="simpan()">Simpan</button>
-
-    <h3>Preview</h3>
-    <div id="previewCard" class="card empty">Maklumat akan dipaparkan di sini</div>
-  </div>
-
-  <!-- LIST OF INFO -->
-  <div class="card hidden" id="listCard">
-    <h2>Senarai Info</h2>
-    <div id="list">
-      <p class="empty">Memuatkan maklumat...</p>
-    </div>
-  </div>
-
 </div>
+
+<footer>Unit Bimbingan & Kaunseling · SMK Jerai</footer>
 
 <script>
 /* =====================
@@ -169,163 +131,130 @@ button:hover {
 ===================== */
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let isAdmin = false;
+let currentKategori = "Utama";
+let editId = null;
 
 /* =====================
-   LOGIN
+   LOGIN ADMIN (contoh static)
 ===================== */
-async function login() {
-  const email = document.getElementById("emailInput").value;
-  const password = document.getElementById("passwordInput").value;
+function loginAdmin(){
+  isAdmin = true;
+  loadKategori(currentKategori);
+}
 
-  const { error } = await db.auth.signInWithPassword({ email, password });
+/* =====================
+   LOAD KATEGORI & PAPAR CARD
+===================== */
+async function loadKategori(kategori){
+  currentKategori = kategori;
+  const content = document.getElementById("content");
+  content.innerHTML = "<p class='empty'>Memuatkan maklumat...</p>";
 
-  if (error) {
-    document.getElementById("loginMsg").textContent = "Login gagal";
+  const { data } = await supabase.from("info_ubk")
+    .select("*").eq("kategori", kategori).order("created_at",{ascending:false});
+
+  content.innerHTML = "";
+
+  if(isAdmin){
+    const addBtn = document.createElement("button");
+    addBtn.id = "addBtn";
+    addBtn.textContent = "Tambah Info";
+    addBtn.onclick = ()=>openModal();
+    content.appendChild(addBtn);
+  }
+
+  if(!data || data.length===0){
+    content.innerHTML += "<p class='empty'>Tiada maklumat</p>";
     return;
   }
 
-  document.getElementById("loginCard").classList.add("hidden");
-  document.getElementById("adminCard").classList.remove("hidden");
-  document.getElementById("listCard").classList.remove("hidden");
-
-  loadList();
-  updatePreview();
-}
-
-/* =====================
-   UPLOAD IMAGE
-===================== */
-async function uploadImage(file) {
-  const filename = Date.now() + "_" + file.name;
-  const { error } = await db.storage.from("ubk-images").upload(filename, file);
-  if (error) {
-    alert("Gagal upload gambar");
-    return null;
-  }
-  return `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
-}
-
-/* =====================
-   SIMPAN DATA
-===================== */
-async function simpan() {
-  const id = document.getElementById("editId").value;
-  const kategori = document.getElementById("kategoriInput").value;
-  const tajuk = document.getElementById("tajukInput").value;
-  const kandungan = document.getElementById("kandunganInput").value;
-  const file = document.getElementById("imageInput").files[0];
-
-  let image_url = null;
-  if (file) image_url = await uploadImage(file);
-
-  const data = { kategori, tajuk, kandungan };
-  if (image_url) data.image_url = image_url;
-
-  if (id) {
-    await db.from("info_ubk").update(data).eq("id", id);
-  } else {
-    await db.from("info_ubk").insert(data);
-  }
-
-  resetForm();
-  loadList();
-}
-
-/* =====================
-   LOAD LIST
-===================== */
-async function loadList() {
-  const { data } = await db.from("info_ubk").select("*").order("created_at", { ascending:false });
-
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  if (!data || data.length === 0) {
-    list.innerHTML = '<p class="empty">Tiada maklumat</p>';
-    return;
-  }
-
-  data.forEach(d => {
+  data.forEach(item=>{
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <h2>${d.tajuk}</h2>
-      ${d.image_url ? `<img src="${d.image_url}" alt="${d.tajuk}">` : ""}
-      <p>${d.kandungan}</p>
-      <div class="actions">
-        <button onclick='editItem(${JSON.stringify(d)})'>Edit</button>
-        <button onclick='hapus(${d.id})'>Padam</button>
-      </div>
+      ${isAdmin? `<div class="admin-controls">
+        <button onclick='editItem(${JSON.stringify(item)})'>Edit</button>
+        <button onclick='deleteItem(${item.id})'>Padam</button>
+      </div>`: ""}
+      <h2>${item.tajuk}</h2>
+      ${item.image_url? `<img src="${item.image_url}">`: ""}
+      <p>${item.kandungan}</p>
     `;
-    list.appendChild(card);
+    content.appendChild(card);
   });
 }
 
 /* =====================
-   EDIT ITEM
+   MODAL FUNCTIONS
 ===================== */
-function editItem(d) {
-  document.getElementById("editId").value = d.id;
-  document.getElementById("kategoriInput").value = d.kategori;
-  document.getElementById("tajukInput").value = d.tajuk;
-  document.getElementById("kandunganInput").value = d.kandungan;
-  updatePreview();
-}
-
-/* =====================
-   DELETE ITEM
-===================== */
-async function hapus(id) {
-  if (!confirm("Padam info ini?")) return;
-  await db.from("info_ubk").delete().eq("id", id);
-  loadList();
-}
-
-/* =====================
-   PREVIEW LIVE
-===================== */
-const tajukInput = document.getElementById("tajukInput");
-const kandunganInput = document.getElementById("kandunganInput");
-const imageInput = document.getElementById("imageInput");
-const previewCard = document.getElementById("previewCard");
-
-function updatePreview() {
-  const title = tajukInput.value || "Tajuk";
-  const content = kandunganInput.value || "Kandungan";
-  if (imageInput.files[0]) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      previewCard.innerHTML = `
-        <h2>${title}</h2>
-        <img src="${e.target.result}" alt="Preview">
-        <p>${content}</p>
-      `;
-    }
-    reader.readAsDataURL(imageInput.files[0]);
-  } else {
-    previewCard.innerHTML = `
-      <h2>${title}</h2>
-      <p>${content}</p>
-    `;
+function openModal(item=null){
+  document.getElementById("adminModal").style.display="flex";
+  if(item){
+    editId = item.id;
+    document.getElementById("modalTajuk").value = item.tajuk;
+    document.getElementById("modalKandungan").value = item.kandungan;
+  }else{
+    editId = null;
+    document.getElementById("modalTajuk").value="";
+    document.getElementById("modalKandungan").value="";
   }
 }
 
-tajukInput.addEventListener("input", updatePreview);
-kandunganInput.addEventListener("input", updatePreview);
-imageInput.addEventListener("change", updatePreview);
+function closeModal(){
+  document.getElementById("adminModal").style.display="none";
+  editId = null;
+  document.getElementById("modalTajuk").value="";
+  document.getElementById("modalKandungan").value="";
+  document.getElementById("modalImage").value="";
+}
 
 /* =====================
-   RESET FORM
+   SAVE ADMIN DATA
 ===================== */
-function resetForm() {
-  document.getElementById("editId").value = "";
-  tajukInput.value = "";
-  kandunganInput.value = "";
-  imageInput.value = "";
-  previewCard.innerHTML = '<p class="empty">Maklumat akan dipaparkan di sini</p>';
+async function saveAdmin(){
+  const tajuk = document.getElementById("modalTajuk").value;
+  const kandungan = document.getElementById("modalKandungan").value;
+  const file = document.getElementById("modalImage").files[0];
+  let image_url = null;
+
+  if(file){
+    const filename = Date.now() + "_" + file.name;
+    const { error } = await supabase.storage.from("ubk-images").upload(filename, file);
+    if(error){ alert("Gagal upload gambar"); return; }
+    image_url = `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
+  }
+
+  const data = { tajuk, kandungan };
+  if(image_url) data.image_url = image_url;
+
+  if(editId){
+    await supabase.from("info_ubk").update(data).eq("id", editId);
+  }else{
+    await supabase.from("info_ubk").insert(data);
+  }
+
+  closeModal();
+  loadKategori(currentKategori);
 }
+
+/* =====================
+   EDIT / DELETE
+===================== */
+function editItem(item){ openModal(item); }
+
+async function deleteItem(id){
+  if(!confirm("Padam info ini?")) return;
+  await supabase.from("info_ubk").delete().eq("id", id);
+  loadKategori(currentKategori);
+}
+
+/* =====================
+   INITIAL LOAD
+===================== */
+loadKategori(currentKategori);
 </script>
 </body>
 </html>
