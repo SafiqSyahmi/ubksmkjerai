@@ -169,11 +169,11 @@ footer {
 
 <header>
   <nav>
-    <button onclick="loadKategori('Utama')">Utama</button>
-    <button onclick="loadKategori('Sejarah')">Sejarah</button>
-    <button onclick="loadKategori('Objektif')">Objektif</button>
-    <button onclick="loadKategori('Fungsi')">Fungsi</button>
-    <button onclick="loadKategori('Staf')">Staf</button>
+    <button data-kategori="Utama">Utama</button>
+    <button data-kategori="Sejarah">Sejarah</button>
+    <button data-kategori="Objektif">Objektif</button>
+    <button data-kategori="Fungsi">Fungsi</button>
+    <button data-kategori="Staf">Staf</button>
     <button class="admin-btn" onclick="location.href='admin.html'">Admin</button>
   </nav>
 </header>
@@ -191,7 +191,7 @@ footer {
   Unit Bimbingan & Kaunseling · SMK Jerai
 </footer>
 
-<!-- Supabase CDN -->
+<!-- SUPABASE CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -201,43 +201,57 @@ footer {
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  async function loadKategori(kategori) {
-    const content = document.getElementById("content");
-    content.innerHTML = `<p class="empty">Memuatkan maklumat...</p>`;
-    const { data, error } = await supabase
-      .from("info_ubk")
-      .select("*")
-      .eq("kategori", kategori)
-      .order("created_at", { ascending: false });
+// =====================
+// LOAD DATA BY CATEGORY
+// =====================
+async function loadKategori(kategori) {
+  const content = document.getElementById("content");
+  content.innerHTML = `<p class="empty">Memuatkan maklumat...</p>`;
 
-    if (error) {
-      content.innerHTML = `<p class="empty">Ralat memuat data</p>`;
-      console.error(error);
-      return;
-    }
+  const { data, error } = await supabaseClient
+    .from("info_ubk")
+    .select("*")
+    .eq("kategori", kategori)
+    .order("created_at", { ascending: false });
 
-    if (!data || data.length === 0) {
-      content.innerHTML = `<p class="empty">Tiada maklumat</p>`;
-      return;
-    }
-
-    content.innerHTML = "";
-    data.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h2>${item.tajuk}</h2>
-        ${item.image_url ? `<img src="${item.image_url}" alt="${item.tajuk}">` : ""}
-        <p>${item.kandungan}</p>
-      `;
-      content.appendChild(card);
-    });
+  if (error) {
+    content.innerHTML = `<p class="empty">Ralat memuat data</p>`;
+    console.error(error);
+    return;
   }
 
-  // Muat awal
-  loadKategori("Utama");
-  </script>
+  if (!data || data.length === 0) {
+    content.innerHTML = `<p class="empty">Tiada maklumat</p>`;
+    return;
+  }
+
+  content.innerHTML = "";
+  data.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h2>${item.tajuk}</h2>
+      ${item.image_url ? `<img src="${item.image_url}" alt="${item.tajuk}">` : ""}
+      <p>${item.kandungan}</p>
+    `;
+    content.appendChild(card);
+  });
+}
+
+// =====================
+// NAVBAR BUTTON EVENTS
+// =====================
+document.querySelectorAll("nav button[data-kategori]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    loadKategori(btn.dataset.kategori);
+  });
+});
+
+// Muat awal
+loadKategori("Utama");
+</script>
+
 </body>
 </html>
