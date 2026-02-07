@@ -8,7 +8,7 @@
 
 <style>
 :root {
-  --primary: #006633; /* hijau admin */
+  --primary: #006633; 
   --secondary: #f4f7f8;
   --text: #222;
   --card-bg: #fff;
@@ -17,13 +17,11 @@
 * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
 body { margin:0; background: var(--secondary); color: var(--text); }
 
-/* HEADER */
 header { background: var(--primary); position: sticky; top:0; z-index:100; }
 nav { max-width:1100px; margin:auto; display:flex; gap:6px; padding:10px; flex-wrap:wrap; }
 nav button { background:transparent; border:none; color:#fff; padding:10px 16px; font-size:15px; cursor:pointer; border-radius:6px; transition: background 0.2s; }
 nav button:hover { background: rgba(255,255,255,0.15); }
 
-/* HERO */
 .hero {
   background: linear-gradient(rgba(0,102,51,0.85), rgba(0,102,51,0.85)),
               url('https://images.unsplash.com/photo-1581092795363-7f3f4f1773f5?auto=format&fit=crop&w=1600&q=80');
@@ -34,45 +32,41 @@ nav button:hover { background: rgba(255,255,255,0.15); }
 .hero h1 { margin:0; font-size:36px; }
 .hero p { max-width:700px; margin:12px auto 0; opacity:0.95; font-size:18px; line-height:1.5; }
 
-/* LOGIN FORM */
-#loginForm {
-  max-width: 400px;
-  margin: 20px auto 0;
-  background: rgba(255,255,255,0.95);
-  padding: 20px; border-radius:10px; color:#222;
-}
-#loginForm input { width:100%; padding:10px; margin:6px 0; border-radius:6px; border:1px solid #ccc; }
-#loginForm button { width:100%; padding:10px; margin-top:6px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; }
-#loginForm button:hover { background:#004d29; }
-#loginMsg { color:red; text-align:center; }
-
-/* CONTENT */
 main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 
-/* CARD */
+#addBtn { 
+  margin:20px 0; padding:12px 20px; 
+  border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; 
+  font-size:16px; 
+}
+#addBtn:hover { background:#004d29; }
+
 .card {
   background: var(--card-bg);
   border-radius: 14px; padding:20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
   margin-bottom:24px;
   transition: transform 0.2s, box-shadow 0.2s;
-  position:relative;
 }
 .card:hover { transform:translateY(-4px); box-shadow:0 12px 35px rgba(0,0,0,0.12); }
 .card h2 { margin-top:0; color: var(--primary); font-size:22px; }
 .card p { line-height:1.7; font-size:16px; }
 .card img { width:100%; max-height:320px; object-fit:contain; border-radius:10px; margin:16px 0; background:#f5f5f5; }
 
-/* ADMIN CONTROLS */
-.admin-controls { position:absolute; top:10px; right:10px; }
-.admin-controls button { margin-left:6px; padding:4px 10px; font-size:13px; background:#004d29; color:white; border:none; border-radius:6px; cursor:pointer; }
-.admin-controls button:hover { background:#003318; }
+.card .card-actions {
+  display:flex; gap:8px; margin-top:10px;
+}
+.card .card-actions button {
+  flex:1;
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  color:white;
+  background:#004d29;
+}
+.card .card-actions button:hover { background:#003318; }
 
-/* ADD BUTTON */
-#addBtn { margin-bottom:20px; padding:10px 16px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; }
-#addBtn:hover { background:#004d29; }
-
-/* MODAL */
 #modalAdmin {
   display:none; position:fixed; top:0; left:0; width:100%; height:100%;
   background:rgba(0,0,0,0.5); justify-content:center; align-items:center;
@@ -84,16 +78,15 @@ main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 .modal-content button { margin-top:6px; width:100%; padding:10px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; }
 .modal-content button:hover { background:#004d29; }
 
-/* EMPTY MESSAGE */
 .empty { text-align:center; color:#777; font-style:italic; padding:40px 0; }
 
-/* FOOTER */
 footer { text-align:center; padding:20px; font-size:14px; color:#666; background:#e6eef8; }
 
 @media(max-width:600px){
   .hero h1{ font-size:28px; }
   .card h2{ font-size:18px; }
   nav{ justify-content:center; }
+  .card .card-actions { flex-direction:column; }
 }
 </style>
 </head>
@@ -134,11 +127,9 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 <footer>Unit Bimbingan & Kaunseling · SMK Jerai</footer>
 
 <script>
-// =====================
-// SUPABASE CONFIG
-// =====================
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentKategori = "Utama";
@@ -150,19 +141,17 @@ let editId = null;
 async function loadKategori(kategori){
   currentKategori = kategori;
   const content = document.getElementById("content");
-  content.innerHTML = "<p class='empty'>Memuatkan maklumat...</p>";
-
-  const { data } = await supabaseClient.from("info_ubk")
-    .select("*").eq("kategori", kategori).order("created_at",{ascending:false});
-
   content.innerHTML = "";
 
-  // ADD BUTTON
+  // ADD BUTTON DI ATAS
   const addBtn = document.createElement("button");
   addBtn.id="addBtn";
   addBtn.textContent="Tambah Info";
   addBtn.onclick = ()=>openModal();
   content.appendChild(addBtn);
+
+  const { data } = await supabaseClient.from("info_ubk")
+    .select("*").eq("kategori", kategori).order("created_at",{ascending:false});
 
   if(!data || data.length===0){
     content.innerHTML += "<p class='empty'>Tiada maklumat</p>";
@@ -173,13 +162,13 @@ async function loadKategori(kategori){
     const card = document.createElement("div");
     card.className="card";
     card.innerHTML = `
-      <div class="admin-controls">
-        <button onclick='editItem(${JSON.stringify(item)})'>Edit</button>
-        <button onclick='deleteItem(${item.id})'>Padam</button>
-      </div>
       <h2>${item.tajuk}</h2>
       ${item.image_url? `<img src="${item.image_url}">`: ""}
       <p>${item.kandungan}</p>
+      <div class="card-actions">
+        <button onclick='editItem(${JSON.stringify(item)})'>Edit</button>
+        <button onclick='deleteItem(${item.id})'>Padam</button>
+      </div>
     `;
     content.appendChild(card);
   });
@@ -244,7 +233,6 @@ document.getElementById("saveBtn").onclick = async function(){
 // EDIT / DELETE
 // =====================
 function editItem(item){ openModal(item); }
-
 async function deleteItem(id){
   if(!confirm("Padam info ini?")) return;
   await supabaseClient.from("info_ubk").delete().eq("id", id);
