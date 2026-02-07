@@ -34,12 +34,13 @@ nav button:hover { background: rgba(255,255,255,0.15); }
 .hero h1 { margin:0; font-size:36px; }
 .hero p { max-width:700px; margin:12px auto 0; opacity:0.95; font-size:18px; line-height:1.5; }
 
-/* Add Button atas content */
-#addBtn { margin:20px auto; display:block; padding:10px 16px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; font-size:16px; }
+/* Add Button bawah hero */
+#addBtnContainer { text-align:center; margin:20px 0; }
+#addBtn { padding:10px 20px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; font-size:16px; }
 #addBtn:hover { background:#004d29; }
 
 /* Main content */
-main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
+main { max-width:1100px; margin:0 auto 40px; padding:0 20px; }
 
 /* Card */
 .card {
@@ -104,11 +105,16 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
   <p>Boleh Tambah, Edit & Padam info secara terus di sini.</p>
 </section>
 
+<!-- Add Button container bawah hero -->
+<div id="addBtnContainer">
+  <button id="addBtn" onclick="openModal()">Tambah Info</button>
+</div>
+
 <main id="content">
   <p class="empty">Memuatkan maklumat...</p>
 </main>
 
-<!-- Tambah / Edit Modal -->
+<!-- Modal Tambah/Edit -->
 <div id="modalAdmin">
   <div class="modal-content">
     <h3 id="modalTitle">Tambah / Edit Info</h3>
@@ -153,13 +159,6 @@ async function loadKategori(kategori){
 
   content.innerHTML = "";
 
-  // ADD BUTTON
-  const addBtn = document.createElement("button");
-  addBtn.id="addBtn";
-  addBtn.textContent="Tambah Info";
-  addBtn.onclick = ()=>openModal();
-  content.appendChild(addBtn);
-
   if(error){
     content.innerHTML += "<p class='empty'>Ralat memuat data</p>";
     console.error(error);
@@ -187,7 +186,7 @@ async function loadKategori(kategori){
 }
 
 // =====================
-// MODAL FUNCTIONS
+// MODAL
 // =====================
 function openModal(item=null){
   document.getElementById("modalAdmin").style.display="flex";
