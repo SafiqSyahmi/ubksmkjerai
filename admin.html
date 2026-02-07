@@ -13,12 +13,10 @@
   --text: #222;
   --card-bg: #fff;
 }
-
 * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-
 body { margin:0; background: var(--secondary); color: var(--text); }
 
-/* ===== HEADER ===== */
+/* HEADER */
 header { background: var(--primary); position: sticky; top:0; z-index:100; }
 nav { max-width:1100px; margin:auto; display:flex; gap:6px; padding:10px; flex-wrap:wrap; }
 nav button { background:transparent; border:none; color:#fff; padding:10px 16px; font-size:15px; cursor:pointer; border-radius:6px; transition: background 0.2s; }
@@ -26,7 +24,7 @@ nav button:hover { background: rgba(255,255,255,0.15); }
 nav .admin-btn { background:#880000; }
 nav .admin-btn:hover { background:#660000; }
 
-/* ===== HERO ===== */
+/* HERO */
 .hero {
   background: linear-gradient(rgba(0,64,128,0.85), rgba(0,64,128,0.85)),
               url('https://images.unsplash.com/photo-1581092795363-7f3f4f1773f5?auto=format&fit=crop&w=1600&q=80');
@@ -36,10 +34,10 @@ nav .admin-btn:hover { background:#660000; }
 .hero h1 { margin:0; font-size:36px; }
 .hero p { max-width:700px; margin:12px auto 0; opacity:0.95; font-size:18px; line-height:1.5; }
 
-/* ===== CONTENT ===== */
+/* CONTENT */
 main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 
-/* ===== CARD ===== */
+/* CARD */
 .card {
   background: var(--card-bg);
   border-radius: 14px; padding:20px;
@@ -53,15 +51,14 @@ main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 .card p { line-height:1.7; font-size:16px; }
 .card img { width:100%; max-height:320px; object-fit:contain; border-radius:10px; margin:16px 0; background:#f5f5f5; }
 
-/* ADMIN BUTTONS ON CARD */
-.admin-controls {
-  position:absolute; top:10px; right:10px;
-}
+/* ADMIN BUTTONS */
+.admin-controls { position:absolute; top:10px; right:10px; }
 .admin-controls button { margin-left:6px; padding:4px 10px; font-size:13px; background:#880000; color:white; border:none; border-radius:6px; cursor:pointer; }
 .admin-controls button:hover { background:#660000; }
 
 /* ADD BUTTON */
-#addBtn { margin-bottom:20px; }
+#addBtn { margin-bottom:20px; padding:10px 16px; border:none; border-radius:6px; background:#004080; color:white; cursor:pointer; }
+#addBtn:hover { background:#003366; }
 
 /* MODAL */
 #adminModal {
@@ -77,7 +74,7 @@ main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 /* EMPTY MESSAGE */
 .empty { text-align:center; color:#777; font-style:italic; padding:40px 0; }
 
-/* ===== FOOTER ===== */
+/* FOOTER */
 footer { text-align:center; padding:20px; font-size:14px; color:#666; background:#e6eef8; }
 
 /* RESPONSIVE */
@@ -93,12 +90,12 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 
 <header>
   <nav>
-    <button onclick="loadKategori('Utama')">Utama</button>
-    <button onclick="loadKategori('Sejarah')">Sejarah</button>
-    <button onclick="loadKategori('Objektif')">Objektif</button>
-    <button onclick="loadKategori('Fungsi')">Fungsi</button>
-    <button onclick="loadKategori('Staf')">Staf</button>
-    <button class="admin-btn" onclick="loginAdmin()">Admin</button>
+    <button data-kategori="Utama">Utama</button>
+    <button data-kategori="Sejarah">Sejarah</button>
+    <button data-kategori="Objektif">Objektif</button>
+    <button data-kategori="Fungsi">Fungsi</button>
+    <button data-kategori="Staf">Staf</button>
+    <button class="admin-btn">Admin</button>
   </nav>
 </header>
 
@@ -118,7 +115,7 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
     <input type="text" id="modalTajuk" placeholder="Tajuk">
     <textarea id="modalKandungan" placeholder="Kandungan"></textarea>
     <input type="file" id="modalImage">
-    <button onclick="saveAdmin()">Simpan</button>
+    <button id="saveBtn">Simpan</button>
     <button onclick="closeModal()">Batal</button>
   </div>
 </div>
@@ -131,14 +128,24 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 ===================== */
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let isAdmin = false;
 let currentKategori = "Utama";
 let editId = null;
 
 /* =====================
-   LOGIN ADMIN (contoh static)
+   EVENT LISTENERS
+===================== */
+document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
+  btn.addEventListener("click", ()=>loadKategori(btn.dataset.kategori));
+});
+
+document.querySelector(".admin-btn").addEventListener("click", loginAdmin);
+document.getElementById("saveBtn").addEventListener("click", saveAdmin);
+
+/* =====================
+   ADMIN LOGIN
 ===================== */
 function loginAdmin(){
   isAdmin = true;
@@ -146,14 +153,14 @@ function loginAdmin(){
 }
 
 /* =====================
-   LOAD KATEGORI & PAPAR CARD
+   LOAD KATEGORI
 ===================== */
 async function loadKategori(kategori){
   currentKategori = kategori;
   const content = document.getElementById("content");
   content.innerHTML = "<p class='empty'>Memuatkan maklumat...</p>";
 
-  const { data } = await supabase.from("info_ubk")
+  const { data } = await supabaseClient.from("info_ubk")
     .select("*").eq("kategori", kategori).order("created_at",{ascending:false});
 
   content.innerHTML = "";
@@ -200,6 +207,7 @@ function openModal(item=null){
     editId = null;
     document.getElementById("modalTajuk").value="";
     document.getElementById("modalKandungan").value="";
+    document.getElementById("modalImage").value="";
   }
 }
 
@@ -222,7 +230,7 @@ async function saveAdmin(){
 
   if(file){
     const filename = Date.now() + "_" + file.name;
-    const { error } = await supabase.storage.from("ubk-images").upload(filename, file);
+    const { error } = await supabaseClient.storage.from("ubk-images").upload(filename, file);
     if(error){ alert("Gagal upload gambar"); return; }
     image_url = `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
   }
@@ -231,9 +239,9 @@ async function saveAdmin(){
   if(image_url) data.image_url = image_url;
 
   if(editId){
-    await supabase.from("info_ubk").update(data).eq("id", editId);
+    await supabaseClient.from("info_ubk").update(data).eq("id", editId);
   }else{
-    await supabase.from("info_ubk").insert(data);
+    await supabaseClient.from("info_ubk").insert(data);
   }
 
   closeModal();
@@ -247,7 +255,7 @@ function editItem(item){ openModal(item); }
 
 async function deleteItem(id){
   if(!confirm("Padam info ini?")) return;
-  await supabase.from("info_ubk").delete().eq("id", id);
+  await supabaseClient.from("info_ubk").delete().eq("id", id);
   loadKategori(currentKategori);
 }
 
@@ -256,5 +264,6 @@ async function deleteItem(id){
 ===================== */
 loadKategori(currentKategori);
 </script>
+
 </body>
 </html>
