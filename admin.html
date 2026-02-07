@@ -3,21 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin UBK</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; }
-.container { max-width:1000px; margin:auto; padding:20px; }
-.card { background:#fff; padding:20px; border-radius:8px; margin-bottom:20px; }
-input, textarea, select, button {
-  width:100%; padding:10px; margin:6px 0;
+body {
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
+  margin:0;
 }
-button { background:#003366; color:#fff; border:none; cursor:pointer; }
-button:hover { background:#002244; }
-img { max-width:150px; display:block; margin-top:8px; }
-.list-item { border-bottom:1px solid #eee; padding:10px 0; }
-.actions button { width:auto; margin-right:6px; }
-.hidden { display:none; }
+.container {
+  max-width:1000px;
+  margin:auto;
+  padding:20px;
+}
+.card {
+  background:#fff;
+  padding:20px;
+  border-radius:8px;
+  margin-bottom:20px;
+}
+input, textarea, select, button {
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+}
+button {
+  background:#003366;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+button:hover {
+  background:#002244;
+}
+.list-item {
+  border-bottom:1px solid #eee;
+  padding:10px 0;
+}
+.actions button {
+  width:auto;
+  margin-right:6px;
+}
+.hidden {
+  display:none;
+}
 </style>
 </head>
 
@@ -27,19 +57,19 @@ img { max-width:150px; display:block; margin-top:8px; }
 <!-- LOGIN -->
 <div class="card" id="loginCard">
   <h2>Login Admin</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
+  <input type="email" id="emailInput" placeholder="Email">
+  <input type="password" id="passwordInput" placeholder="Password">
   <button onclick="login()">Login</button>
   <p id="loginMsg"></p>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN FORM -->
 <div class="card hidden" id="adminCard">
   <h2>Tambah / Edit Info UBK</h2>
 
   <input type="hidden" id="editId">
 
-  <select id="kategori">
+  <select id="kategoriInput">
     <option>Utama</option>
     <option>Sejarah</option>
     <option>Objektif</option>
@@ -47,9 +77,9 @@ img { max-width:150px; display:block; margin-top:8px; }
     <option>Staf</option>
   </select>
 
-  <input type="text" id="tajuk" placeholder="Tajuk">
-  <textarea id="kandungan" placeholder="Kandungan"></textarea>
-  <input type="file" id="image">
+  <input type="text" id="tajukInput" placeholder="Tajuk">
+  <textarea id="kandunganInput" placeholder="Kandungan"></textarea>
+  <input type="file" id="imageInput">
 
   <button onclick="simpan()">Simpan</button>
 </div>
@@ -63,70 +93,92 @@ img { max-width:150px; display:block; margin-top:8px; }
 </div>
 
 <script>
+/* =====================
+   SUPABASE CONFIG
+===================== */
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
+
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ================= LOGIN ================= */
+/* =====================
+   LOGIN
+===================== */
 async function login() {
-  const email = email.value;
-  const password = password.value;
+  const email = document.getElementById("emailInput").value;
+  const password = document.getElementById("passwordInput").value;
 
-  const { error } = await db.auth.signInWithPassword({ email, password });
+  const { error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
 
   if (error) {
-    loginMsg.textContent = "Login gagal";
+    document.getElementById("loginMsg").textContent = "Login gagal";
     return;
   }
 
-  loginCard.classList.add("hidden");
-  adminCard.classList.remove("hidden");
-  listCard.classList.remove("hidden");
+  document.getElementById("loginCard").classList.add("hidden");
+  document.getElementById("adminCard").classList.remove("hidden");
+  document.getElementById("listCard").classList.remove("hidden");
+
   loadList();
 }
 
-/* ================= UPLOAD IMAGE ================= */
+/* =====================
+   UPLOAD IMAGE
+===================== */
 async function uploadImage(file) {
   const filename = Date.now() + "_" + file.name;
 
-  const { data, error } = await db.storage
+  const { error } = await db.storage
     .from("ubk-images")
     .upload(filename, file);
 
-  if (error) return null;
+  if (error) {
+    alert("Gagal upload gambar");
+    return null;
+  }
 
   return `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
 }
 
-/* ================= SIMPAN DATA ================= */
+/* =====================
+   SIMPAN DATA
+===================== */
 async function simpan() {
-  let imageUrl = null;
-  const file = image.files[0];
+  const id = document.getElementById("editId").value;
+  const kategori = document.getElementById("kategoriInput").value;
+  const tajuk = document.getElementById("tajukInput").value;
+  const kandungan = document.getElementById("kandunganInput").value;
+  const file = document.getElementById("imageInput").files[0];
 
-  if (file) {
-    imageUrl = await uploadImage(file);
-  }
+  let image_url = null;
+  if (file) image_url = await uploadImage(file);
 
-  const payload = {
-    kategori: kategori.value,
-    tajuk: tajuk.value,
-    kandungan: kandungan.value,
-    image_url: imageUrl
-  };
+  const data = { kategori, tajuk, kandungan };
+  if (image_url) data.image_url = image_url;
 
-  if (editId.value) {
-    await db.from("info_ubk").update(payload).eq("id", editId.value);
+  if (id) {
+    await db.from("info_ubk").update(data).eq("id", id);
   } else {
-    await db.from("info_ubk").insert(payload);
+    await db.from("info_ubk").insert(data);
   }
 
   resetForm();
   loadList();
 }
 
-/* ================= LOAD LIST ================= */
+/* =====================
+   LOAD LIST
+===================== */
 async function loadList() {
-  const { data } = await db.from("info_ubk").select("*").order("created_at", { ascending:false });
+  const { data } = await db
+    .from("info_ubk")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  const list = document.getElementById("list");
   list.innerHTML = "";
 
   data.forEach(d => {
@@ -135,7 +187,7 @@ async function loadList() {
     div.innerHTML = `
       <b>${d.tajuk}</b> (${d.kategori})
       <div class="actions">
-        <button onclick='edit(${JSON.stringify(d)})'>Edit</button>
+        <button onclick='editItem(${JSON.stringify(d)})'>Edit</button>
         <button onclick='hapus(${d.id})'>Delete</button>
       </div>
     `;
@@ -143,15 +195,19 @@ async function loadList() {
   });
 }
 
-/* ================= EDIT ================= */
-function edit(d) {
-  editId.value = d.id;
-  kategori.value = d.kategori;
-  tajuk.value = d.tajuk;
-  kandungan.value = d.kandungan;
+/* =====================
+   EDIT
+===================== */
+function editItem(d) {
+  document.getElementById("editId").value = d.id;
+  document.getElementById("kategoriInput").value = d.kategori;
+  document.getElementById("tajukInput").value = d.tajuk;
+  document.getElementById("kandunganInput").value = d.kandungan;
 }
 
-/* ================= DELETE ================= */
+/* =====================
+   DELETE
+===================== */
 async function hapus(id) {
   if (!confirm("Padam info ini?")) return;
   await db.from("info_ubk").delete().eq("id", id);
@@ -159,11 +215,12 @@ async function hapus(id) {
 }
 
 function resetForm() {
-  editId.value = "";
-  tajuk.value = "";
-  kandungan.value = "";
-  image.value = "";
+  document.getElementById("editId").value = "";
+  document.getElementById("tajukInput").value = "";
+  document.getElementById("kandunganInput").value = "";
+  document.getElementById("imageInput").value = "";
 }
 </script>
+
 </body>
 </html>
