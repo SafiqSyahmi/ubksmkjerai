@@ -29,9 +29,22 @@ nav button:hover { background: rgba(255,255,255,0.15); }
               url('https://images.unsplash.com/photo-1581092795363-7f3f4f1773f5?auto=format&fit=crop&w=1600&q=80');
   background-size: cover; background-position: center;
   color:white; padding:60px 20px; text-align:center;
+  position: relative;
 }
 .hero h1 { margin:0; font-size:36px; }
 .hero p { max-width:700px; margin:12px auto 0; opacity:0.95; font-size:18px; line-height:1.5; }
+
+/* LOGIN FORM */
+#loginForm {
+  max-width: 400px;
+  margin: 20px auto 0;
+  background: rgba(255,255,255,0.95);
+  padding: 20px; border-radius:10px; color:#222;
+}
+#loginForm input { width:100%; padding:10px; margin:6px 0; border-radius:6px; border:1px solid #ccc; }
+#loginForm button { width:100%; padding:10px; margin-top:6px; border:none; border-radius:6px; background:#006633; color:white; cursor:pointer; }
+#loginForm button:hover { background:#004d29; }
+#loginMsg { color:red; text-align:center; }
 
 /* CONTENT */
 main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
@@ -101,10 +114,18 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 <section class="hero">
   <h1>Admin UBK - SMK Jerai</h1>
   <p>Boleh Tambah, Edit & Padam info secara terus di sini.</p>
+
+  <!-- LOGIN FORM -->
+  <div id="loginForm">
+    <input type="email" id="emailInput" placeholder="Email admin">
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button onclick="loginAdmin()">Login</button>
+    <p id="loginMsg"></p>
+  </div>
 </section>
 
 <main id="content">
-  <p class="empty">Memuatkan maklumat...</p>
+  <p class="empty">Sila login untuk akses info admin.</p>
 </main>
 
 <!-- MODAL TAMBAH/EDIT -->
@@ -129,12 +150,32 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentKategori = "Utama";
 let editId = null;
+let isAdmin = false;
+
+/* =====================
+   LOGIN ADMIN
+===================== */
+async function loginAdmin(){
+  const email = document.getElementById("emailInput").value;
+  const password = document.getElementById("passwordInput").value;
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){
+    document.getElementById("loginMsg").textContent = "Login gagal";
+    return;
+  }
+
+  // login berjaya
+  isAdmin = true;
+  document.getElementById("loginForm").style.display="none";
+  loadKategori(currentKategori);
+}
 
 /* =====================
    EVENT LISTENERS
 ===================== */
 document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
-  btn.addEventListener("click", ()=>loadKategori(btn.dataset.kategori));
+  btn.addEventListener("click", ()=>{ if(isAdmin) loadKategori(btn.dataset.kategori); });
 });
 
 /* =====================
@@ -152,8 +193,8 @@ async function loadKategori(kategori){
 
   // ADD BUTTON
   const addBtn = document.createElement("button");
-  addBtn.id = "addBtn";
-  addBtn.textContent = "Tambah Info";
+  addBtn.id="addBtn";
+  addBtn.textContent="Tambah Info";
   addBtn.onclick = ()=>openModal();
   content.appendChild(addBtn);
 
@@ -164,7 +205,7 @@ async function loadKategori(kategori){
 
   data.forEach(item=>{
     const card = document.createElement("div");
-    card.className = "card";
+    card.className="card";
     card.innerHTML = `
       <div class="admin-controls">
         <button onclick='editItem(${JSON.stringify(item)})'>Edit</button>
@@ -194,10 +235,9 @@ function openModal(item=null){
     document.getElementById("modalImage").value="";
   }
 }
-
 function closeModal(){
   document.getElementById("modalAdmin").style.display="none";
-  editId = null;
+  editId=null;
   document.getElementById("modalTajuk").value="";
   document.getElementById("modalKandungan").value="";
   document.getElementById("modalImage").value="";
@@ -206,7 +246,7 @@ function closeModal(){
 /* =====================
    SAVE DATA
 ===================== */
-async function saveAdmin(){
+document.getElementById("saveBtn").onclick = async function(){
   const tajuk = document.getElementById("modalTajuk").value;
   const kandungan = document.getElementById("modalKandungan").value;
   const file = document.getElementById("modalImage").files[0];
@@ -230,7 +270,7 @@ async function saveAdmin(){
 
   closeModal();
   loadKategori(currentKategori);
-}
+};
 
 /* =====================
    EDIT / DELETE
@@ -242,11 +282,7 @@ async function deleteItem(id){
   await supabaseClient.from("info_ubk").delete().eq("id", id);
   loadKategori(currentKategori);
 }
-
-/* =====================
-   INITIAL LOAD
-===================== */
-loadKategori(currentKategori);
 </script>
+
 </body>
 </html>
