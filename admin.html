@@ -90,7 +90,6 @@ main { max-width:1100px; margin:-40px auto 40px; padding:0 20px; }
 /* FOOTER */
 footer { text-align:center; padding:20px; font-size:14px; color:#666; background:#e6eef8; }
 
-/* RESPONSIVE */
 @media(max-width:600px){
   .hero h1{ font-size:28px; }
   .card h2{ font-size:18px; }
@@ -114,18 +113,10 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 <section class="hero">
   <h1>Admin UBK - SMK Jerai</h1>
   <p>Boleh Tambah, Edit & Padam info secara terus di sini.</p>
-
-  <!-- LOGIN FORM -->
-  <div id="loginForm">
-    <input type="email" id="emailInput" placeholder="Email admin">
-    <input type="password" id="passwordInput" placeholder="Password">
-    <button onclick="loginAdmin()">Login</button>
-    <p id="loginMsg"></p>
-  </div>
 </section>
 
 <main id="content">
-  <p class="empty">Sila login untuk akses info admin.</p>
+  <p class="empty">Sila tekan kategori untuk mula.</p>
 </main>
 
 <!-- MODAL TAMBAH/EDIT -->
@@ -143,44 +134,19 @@ footer { text-align:center; padding:20px; font-size:14px; color:#666; background
 <footer>Unit Bimbingan & Kaunseling · SMK Jerai</footer>
 
 <script>
+// =====================
+// SUPABASE CONFIG
+// =====================
 const SUPABASE_URL = "https://btbriumtawxuonuccwpq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0YnJpdW10YXd4dW9udWNjd3BxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzNzIwMTAsImV4cCI6MjA4NTk0ODAxMH0.Bl1ivB6lvgEBLM0OtRl4CNERHgI35sCrj_mJBANQQB8";
-
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentKategori = "Utama";
 let editId = null;
-let isAdmin = false;
 
-/* =====================
-   LOGIN ADMIN
-===================== */
-async function loginAdmin(){
-  const email = document.getElementById("emailInput").value;
-  const password = document.getElementById("passwordInput").value;
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){
-    document.getElementById("loginMsg").textContent = "Login gagal";
-    return;
-  }
-
-  // login berjaya
-  isAdmin = true;
-  document.getElementById("loginForm").style.display="none";
-  loadKategori(currentKategori);
-}
-
-/* =====================
-   EVENT LISTENERS
-===================== */
-document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
-  btn.addEventListener("click", ()=>{ if(isAdmin) loadKategori(btn.dataset.kategori); });
-});
-
-/* =====================
-   LOAD KATEGORI
-===================== */
+// =====================
+// LOAD KATEGORI
+// =====================
 async function loadKategori(kategori){
   currentKategori = kategori;
   const content = document.getElementById("content");
@@ -219,9 +185,9 @@ async function loadKategori(kategori){
   });
 }
 
-/* =====================
-   MODAL FUNCTIONS
-===================== */
+// =====================
+// MODAL FUNCTIONS
+// =====================
 function openModal(item=null){
   document.getElementById("modalAdmin").style.display="flex";
   if(item){
@@ -243,19 +209,21 @@ function closeModal(){
   document.getElementById("modalImage").value="";
 }
 
-/* =====================
-   SAVE DATA
-===================== */
+// =====================
+// SAVE DATA
+// =====================
 document.getElementById("saveBtn").onclick = async function(){
   const tajuk = document.getElementById("modalTajuk").value;
   const kandungan = document.getElementById("modalKandungan").value;
   const file = document.getElementById("modalImage").files[0];
   let image_url = null;
 
+  if(!tajuk || !kandungan){ alert("Sila isi tajuk dan kandungan"); return; }
+
   if(file){
     const filename = Date.now() + "_" + file.name;
     const { error } = await supabaseClient.storage.from("ubk-images").upload(filename, file);
-    if(error){ alert("Gagal upload gambar"); return; }
+    if(error){ alert("Gagal upload gambar"); console.log(error); return; }
     image_url = `${SUPABASE_URL}/storage/v1/object/public/ubk-images/${filename}`;
   }
 
@@ -272,9 +240,9 @@ document.getElementById("saveBtn").onclick = async function(){
   loadKategori(currentKategori);
 };
 
-/* =====================
-   EDIT / DELETE
-===================== */
+// =====================
+// EDIT / DELETE
+// =====================
 function editItem(item){ openModal(item); }
 
 async function deleteItem(id){
@@ -282,6 +250,16 @@ async function deleteItem(id){
   await supabaseClient.from("info_ubk").delete().eq("id", id);
   loadKategori(currentKategori);
 }
+
+// =====================
+// NAV BUTTONS
+// =====================
+document.querySelectorAll("nav button[data-kategori]").forEach(btn=>{
+  btn.addEventListener("click", ()=> loadKategori(btn.dataset.kategori));
+});
+
+// LOAD DEFAULT
+loadKategori(currentKategori);
 </script>
 
 </body>
